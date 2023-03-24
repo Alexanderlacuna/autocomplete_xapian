@@ -10,6 +10,60 @@ from flask import Flask
 
 app = Flask(__name__)
 
+
+def _to_xapian_term(term):
+    """
+    Converts a Python type to a
+    Xapian term that can be indexed.
+    """
+    return str(term).lower()
+
+
+
+# indexing part 
+def get_ngram_lengths(lengths):
+	values = value.split()
+
+	for item in values:
+		for ngram_length  in range(NGRAM_MIN_LENGTH,NGRAM_MAX_LENGTH+1):
+			yield item,ngram_length
+
+	# todo
+
+	for obj in iterable:
+		document =  xapian.Document()
+		term_generator.set_document(document)
+
+
+def ngram_terms(value):
+	for item,length in  get_ngram_lengths(value):
+		item_length = len(item)
+
+		for start in range(0,item_length-length+1):
+			for size in range(length,length+1):
+				end = start + size
+
+				if end > item_length:
+					continue
+
+				yield _to_xapian_term(item[start:end])
+
+def  edge_ngram_terms(value):
+	for item,length in get_ngram_lengths(value):
+		yield  to_xapian_term(item[0:length])
+
+
+def add_edge_ngram_to_document(document,prefix, value, weight):
+	# split term in ngram add each ngram to the index
+	# the minimum_min_length<=ngram=> ngram_max_lenght
+	for term in edge_ngram_terms(value):
+		document.add_term(term, weight)
+		document.add_term(prefix+term,weight)
+
+
+
+
+
 def index(datapath, dbpath):
 
 	# docs
@@ -62,56 +116,6 @@ def index(datapath, dbpath):
 
 	    db.replace_document(iditerm,doc)
 
-
-
-def _to_xapian_term(term):
-    """
-    Converts a Python type to a
-    Xapian term that can be indexed.
-    """
-    return str(term).lower()
-
-
-
-# indexing part 
-def get_ngram_lengths(lengths):
-	values = value.split()
-
-	for item in values:
-		for ngram_length  in range(NGRAM_MIN_LENGTH,NGRAM_MAX_LENGTH+1):
-			yield item,ngram_length
-
-	# todo
-
-	for obj in iterable:
-		document =  xapian.Document()
-		term_generator.set_document(document)
-
-
-def ngram_terms(value):
-	for item,length in  get_ngram_lengths(value):
-		item_length = len(item)
-
-		for start in range(0,item_length-length+1):
-			for size in range(length,length+1):
-				end = start + size
-
-				if end > item_length:
-					continue
-
-				yield _to_xapian_term(item[start:end])
-
-def  edge_ngram_terms(value):
-	for item,length in get_ngram_lengths(value):
-		yield  to_xapian_term(item[0:length])
-
-
-def add_edge_ngram_to_document(document,prefix, value, weight):
-	# split term in ngram add each ngram to the index
-	# the minimum_min_length<=ngram=> ngram_max_lenght
-	for term in edge_ngram_terms(value):
-		document.add_term(term, weight)
-		document.add_term(prefix+term,weight)
 
 
 def autocomplete(request):

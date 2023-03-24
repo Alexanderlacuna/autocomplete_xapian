@@ -2,22 +2,13 @@ import json
 import xapian
 
 
-
 NGRAM_MIN_LENGTH = 4
 NGRAM_MAX_LENGTH = 15
-
-
-
-
-
-
 
 
 from flask import Flask
 
 app = Flask(__name__)
-
-
 
 def index(datapath, dbpath):
 
@@ -70,6 +61,15 @@ def index(datapath, dbpath):
 	    doc.add_boolean_term(idterm)
 
 	    db.replace_document(iditerm,doc)
+
+
+
+def _to_xapian_term(term):
+    """
+    Converts a Python type to a
+    Xapian term that can be indexed.
+    """
+    return str(term).lower()
 
 
 
@@ -127,9 +127,6 @@ def autocomplete(request):
 		}))
 
 
-
-
-
 # multfield search  pass files and search term
 
 #https://stackoverflow.com/questions/12262590/django-haystack-autocompletion-on-two-multiple-fields
@@ -142,7 +139,8 @@ class MySearchQuerySet(SearchQuerySet):
         `fragment`: The term sought
         
         """
-        clone = self._clone()
+
+        # incomplet
         query_bits = []
         lookup = kwargs.get('lookup', '__contains')
 
